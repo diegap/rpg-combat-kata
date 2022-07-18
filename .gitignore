@@ -1,6 +1,33 @@
-## IntelliJ
-.idea/
-*.iml
+.gradle
+/build/
+/classes/
+!gradle/wrapper/gradle-wrapper.jar
 
-## Maven
-target/
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/
+out/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+### OSX ###
+.DS_Store
+
+### Generated sources ###
+generated-sources/
