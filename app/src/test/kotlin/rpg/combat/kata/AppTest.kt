@@ -4,11 +4,64 @@
 package rpg.combat.kata
 
 import kotlin.test.Test
-import kotlin.test.assertNotNull
+import kotlin.test.assertEquals
 
 class AppTest {
-    @Test fun testAppHasAGreeting() {
-        val classUnderTest = App()
-        assertNotNull(classUnderTest.greeting, "app should have a greeting")
+
+    /*
+        All Characters, when created, have:
+        - Health, starting at 1000
+        - Level, starting at 1
+        - May be alive or dead, starting alive
+        */
+
+    @Test
+    fun `All Characters, when created`() {
+        // when
+        val character = RPGCharacter()
+
+        // then
+        assertEquals(1000, character.health)
+        assertEquals(1, character.level)
+        assertEquals(true, character.isAlive)
+
+    }
+
+    /*
+    Characters can deal damage to characters.
+        - Damage is subtracted from health
+        - When damage received is greater than or equal to the current health, health becomes 0 and the character dies
+     */
+    @Test
+    fun `Characters deals 200 damage to characters`() {
+        // given
+        val attacker = RPGCharacter()
+        val victim = RPGCharacter()
+        val expectedVictim = victim.copy(health = 800)
+
+        // when
+        val victimAfterDamage = attacker.attack(victim, damage = 200)
+
+        // then
+        assertEquals(expectedVictim, victimAfterDamage)
+    }
+
+
+}
+
+data class RPGCharacter(
+    val health: Int,
+    val level: Int,
+    val isAlive: Boolean
+) {
+
+    constructor() : this(
+        health = 1000,
+        level = 1,
+        isAlive = true
+    )
+
+    fun attack(victim: RPGCharacter, damage: Int): RPGCharacter {
+        return victim.copy(health = victim.health - damage)
     }
 }
