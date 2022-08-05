@@ -3,6 +3,8 @@
  */
 package rpg.combat.kata
 
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -21,7 +23,7 @@ class AppTest {
         val character = RPGCharacter()
 
         // then
-        assertEquals(1000, character.health)
+        assertEquals(RPGCharacter.INITIAL_HEALTH, character.health)
         assertEquals(1, character.level)
         assertEquals(true, character.isAlive)
 
@@ -46,22 +48,111 @@ class AppTest {
         assertEquals(expectedVictim, victimAfterDamage)
     }
 
+    @Test
+    fun `Characters dies after receiving damage equal to remaining health`() {
+        // given
+        val attacker = RPGCharacter()
+        val victim = RPGCharacter()
+        val expectedVictim = victim.copy(health = 0)
+
+        // when
+        val victimAfterDamage = attacker.attack(victim, damage = victim.health)
+
+        // then
+        assertEquals(expectedVictim, victimAfterDamage)
+    }
+
+    @Test
+    fun `Characters dies after receiving damage greater than remaining health`() {
+        // given
+        val attacker = RPGCharacter()
+        val victim = RPGCharacter()
+        val expectedVictim = victim.copy(health = 0)
+
+        // when
+        val victimAfterDamage = attacker.attack(victim, damage = victim.health + 10)
+
+        // then
+        assertEquals(expectedVictim, victimAfterDamage)
+    }
+
+    /*
+     A character can heal a character.
+	- Dead characters cannot be healed
+	- Healing cannot raise health above 1000
+     */
+    @Test
+    fun `Alive characters can be full healed`() {
+        // given
+        val healer = RPGCharacter()
+        val healthToAdd = 10
+        val damagedVictim = RPGCharacter(health = RPGCharacter.INITIAL_HEALTH - 10, level = 1)
+        val expectedHealedVictim = damagedVictim.copy(health = RPGCharacter.INITIAL_HEALTH)
+
+        //when
+        val healedVictim = healer.heal(damagedVictim, healthToAdd)
+
+        //then
+        assertEquals(expectedHealedVictim, healedVictim)
+    }
+
+    @Test
+    fun `Alive characters can be partially healed`() {
+        // given
+        val healer = RPGCharacter()
+        val currentHealth = RPGCharacter.INITIAL_HEALTH - 10
+        val healthToAdd = 5
+        val damagedVictim = RPGCharacter(health = currentHealth, level = 1)
+        val expectedHealedVictim = damagedVictim.copy(health = currentHealth + healthToAdd)
+
+        //when
+        val healedVictim = healer.heal(damagedVictim, healthToAdd = healthToAdd)
+
+        //then
+        assertEquals(expectedHealedVictim, healedVictim)
+    }
+
+    @Test
+    fun `Alive characters can be full healed when overhealed`() {
+        // given
+        val healer = RPGCharacter()
+        val healthToAdd = RPGCharacter.INITIAL_HEALTH
+        val damagedVictim = RPGCharacter(health = RPGCharacter.INITIAL_HEALTH - 10, level = 1)
+        val expectedHealedVictim = damagedVictim.copy(health = RPGCharacter.INITIAL_HEALTH)
+
+        //when
+        val healedVictim = healer.heal(damagedVictim, healthToAdd)
+
+        //then
+        assertEquals(expectedHealedVictim, healedVictim)
+    }
+
 
 }
 
 data class RPGCharacter(
     val health: Int,
-    val level: Int,
-    val isAlive: Boolean
+    val level: Int
 ) {
 
     constructor() : this(
-        health = 1000,
-        level = 1,
-        isAlive = true
+        health = INITIAL_HEALTH,
+        level = 1
     )
 
+    val isAlive: Boolean get() = health > 0
+
     fun attack(victim: RPGCharacter, damage: Int): RPGCharacter {
-        return victim.copy(health = victim.health - damage)
+        val remainingHealth = max(victim.health - damage, 0)
+        return victim.copy(health = remainingHealth)
+    }
+
+    fun heal(character: RPGCharacter, healthToAdd: Int): RPGCharacter {
+        val remainingHealth = min(character.health + healthToAdd, INITIAL_HEALTH)
+        return character.copy(health = remainingHealth)
+    }
+
+    companion object {
+        const val INITIAL_HEALTH = 1000
     }
 }
