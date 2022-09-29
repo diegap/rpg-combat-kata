@@ -3,10 +3,11 @@
  */
 package rpg.combat.kata
 
-import kotlin.math.max
-import kotlin.math.min
+import rpg.combat.kata.domain.RPGCharacter
+import rpg.combat.kata.domain.exceptions.InvalidCharacterActionException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class AppTest {
 
@@ -26,7 +27,6 @@ class AppTest {
         assertEquals(RPGCharacter.INITIAL_HEALTH, character.health)
         assertEquals(1, character.level)
         assertEquals(true, character.isAlive)
-
     }
 
     /*
@@ -127,32 +127,32 @@ class AppTest {
         assertEquals(expectedHealedVictim, healedVictim)
     }
 
+    @Test
+    fun `Dead characters cant be healed`() {
+        // given
+        val healer = RPGCharacter()
+        val healthToAdd = RPGCharacter.INITIAL_HEALTH
+        val deadCharacter = RPGCharacter(health = 0, level = 1)
+        val expectedHealedVictim = deadCharacter.copy(health = 0)
+
+        //when
+        val healedVictim = healer.heal(deadCharacter, healthToAdd)
+
+        //then
+        assertEquals(expectedHealedVictim, healedVictim)
+    }
+
+    @Test
+    fun `The player can deal damage to his enemies, but not to himself`() {
+        // given
+        val iAm = RPGCharacter()
+
+        //then
+        assertFailsWith<InvalidCharacterActionException> {
+            iAm.attack(iAm, 10)
+        }
+
+    }
 
 }
 
-data class RPGCharacter(
-    val health: Int,
-    val level: Int
-) {
-
-    constructor() : this(
-        health = INITIAL_HEALTH,
-        level = 1
-    )
-
-    val isAlive: Boolean get() = health > 0
-
-    fun attack(victim: RPGCharacter, damage: Int): RPGCharacter {
-        val remainingHealth = max(victim.health - damage, 0)
-        return victim.copy(health = remainingHealth)
-    }
-
-    fun heal(character: RPGCharacter, healthToAdd: Int): RPGCharacter {
-        val remainingHealth = min(character.health + healthToAdd, INITIAL_HEALTH)
-        return character.copy(health = remainingHealth)
-    }
-
-    companion object {
-        const val INITIAL_HEALTH = 1000
-    }
-}
